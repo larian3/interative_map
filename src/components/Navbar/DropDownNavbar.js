@@ -50,7 +50,7 @@ export default function DropdownNavbar() {
         <div className="relative w-full sm:w-[200px] max-w-full">
           <select
             className="w-full max-w-full h-[50px] text-[18px] text-black bg-white border border-gray-300 rounded-lg shadow-md 
-              p-3 pr-10 text-center transition-all duration-300 ease-in-out 
+              p-3 pr-10 text-left transition-all duration-300 ease-in-out 
               focus:border-green-500 focus:ring focus:ring-green-400 hover:border-green-500 appearance-none"
             value={selectedMeso}
             onChange={(e) => setSelectedMeso(e.target.value)}
@@ -68,7 +68,7 @@ export default function DropdownNavbar() {
         <div className="relative w-full sm:w-[200px] max-w-full">
         <select
             className="w-full max-w-full h-[50px] text-[18px] text-black bg-white border border-gray-300 rounded-lg shadow-md 
-            p-3 pr-10 text-center transition-all duration-300 ease-in-out 
+            p-3 pr-10 text-left transition-all duration-300 ease-in-out 
             focus:border-green-500 focus:ring focus:ring-green-400 hover:border-green-500 appearance-none
             disabled:bg-gray-200 disabled:cursor-not-allowed"
             value={selectedMicro}
