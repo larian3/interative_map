@@ -1,0 +1,2 @@
+-- AddForeignKey
+ALTER TABLE "Micro" ADD CONSTRAINT "Micro_mesoId_fkey" FOREIGN KEY ("mesoId") REFERENCES "Meso"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
