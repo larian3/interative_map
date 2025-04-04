@@ -50,12 +50,13 @@ export default function DropdownNavbar() {
       
       {/* Mesorregião */}
       <div className="w-full sm:w-[200px] max-w-full">
-        <label className="block text-sm font-medium text-gray-700">Mesorregião</label>
+        <label className="block text-sm font-medium text-gray-700">Mesorregião:</label>
         <div className="relative">
           <select
-            className="w-full h-[40px] text-[18px] text-black bg-white border border-gray-300 rounded-lg shadow-md 
-              p-1 pr-10 text-left transition-all duration-300 ease-in-out 
-              focus:border-green-500 focus:ring focus:ring-green-400 hover:border-green-500 appearance-none"
+            className="w-full h-[44px] text-[16px] text-gray-900 bg-white border border-gray-300 rounded-md shadow-sm 
+            px-3 pr-10 text-left transition-all duration-200 ease-in-out 
+            focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 
+            hover:border-gray-400 appearance-none"
             value={selectedMeso}
             onChange={(e) => setSelectedMeso(e.target.value)}
           >
@@ -72,13 +73,14 @@ export default function DropdownNavbar() {
 
       {/* Microrregião */}
       <div className="w-[full] sm:w-[200px] max-w-full">
-        <label className="block text-sm font-medium text-gray-700 ">Microrregião</label>
+        <label className="block text-sm font-medium text-gray-700 ">Microrregião:</label>
         <div className="relative">
           <select
-            className="w-full h-[40px] text-[18px] text-black bg-white border border-gray-300 rounded-lg shadow-md 
-              p-1 pr-10 text-left transition-all duration-300 ease-in-out 
-              focus:border-green-500 focus:ring focus:ring-green-400 hover:border-green-500 appearance-none
-              disabled:bg-gray-200 disabled:cursor-not-allowed"
+            className="w-full h-[44px] text-[16px] text-gray-900 bg-white border border-gray-300 rounded-md shadow-sm 
+            px-3 pr-10 text-left transition-all duration-200 ease-in-out 
+            focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 
+            hover:border-gray-400 appearance-none
+            disabled:bg-gray-200 disabled:cursor-not-allowed"
             value={selectedMicro}
             onChange={(e) => setSelectedMicro(e.target.value)}
             disabled={!selectedMeso}
