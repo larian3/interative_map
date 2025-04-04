@@ -72,7 +72,7 @@ export default function DropdownNavbar() {
       </div>
 
       {/* Microrregião */}
-      <div className="w-[full] sm:w-[200px] max-w-full">
+      <div className="w-full sm:w-[200px] max-w-full">
         <label className="block text-sm font-medium text-gray-700 ">Microrregião:</label>
         <div className="relative">
           <select
