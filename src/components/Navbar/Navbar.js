@@ -29,7 +29,7 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="bg-white shadow-md h-[80px] px-4 flex items-center justify-between">
+    <nav className="bg-white shadow-md h-[80px] px-4 flex items-center justify-between z-10 relative">
       <div className="flex items-center space-x-3">
         <Image
           src={user?.image || "/avatar.png"}
