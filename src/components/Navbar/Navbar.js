@@ -61,7 +61,7 @@ export default function Navbar() {
             <FiX size={28} />
           </button>
           <div className="flex flex-col space-y-4">
-            <DropdownNavbar />
+          <DropdownNavbar onSelect={() => setIsMenuOpen(false)} />
           </div>
         </div>
       )}
