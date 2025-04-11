@@ -1,18 +1,59 @@
 'use client';
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
+import { MapContainer, TileLayer, GeoJSON, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { useMeso } from "@/context/MesoContext";
+import L from "leaflet";
 
-const Mapa = () => {
-  const { selectedMesoNome } = useMeso(); 
-  const [geo, setGeo] = useState({ para: null, meso: null }); 
-  const [zoomLevel, setZoomLevel] = useState(null);
-  const [renderKey, setRenderKey] = useState(0);
+const FitBounds = ({ geojson }) => {
+  const map = useMap();
 
   useEffect(() => {
-    setZoomLevel(window.innerWidth < 768 ? 5 : 6);
+    if (!geojson) return;
 
+    const layer = L.geoJSON(geojson);
+    const bounds = layer.getBounds();
+    const isMobile = window.innerWidth > 768;
+    map.fitBounds(bounds, { padding: [0, 0] });
+  }, [geojson, map]);
+
+  return null;
+};
+
+const FitBoundsPara = ({ geojson }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!geojson) return;
+
+    const layer = L.geoJSON(geojson);
+    const bounds = layer.getBounds();
+    const isMobile = window.innerWidth < 768;
+
+    map.fitBounds(bounds, {
+      padding: isMobile ? [0, 0] : [0, 0],
+    });
+  }, [geojson, map]);
+
+  return null;
+};
+
+const Mapa = () => {
+  const { selectedMesoNome } = useMeso();
+  const [geo, setGeo] = useState({ para: null, meso: null });
+  const [zoomLevel, setZoomLevel] = useState(6);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setZoomLevel(window.innerWidth < 768 ? 5 : 6);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
     fetch("/brazil-states.geojson")
       .then((res) => res.json())
       .then((data) => {
@@ -28,28 +69,24 @@ const Mapa = () => {
   useEffect(() => {
     if (!selectedMesoNome) return;
 
-    console.log("Mesorregião selecionada:", selectedMesoNome);
-
     fetch("/mesorregioes_para.geojson")
       .then((res) => res.json())
       .then((data) => {
         const features = data.features.filter(
-          (f) => f.properties.NM_MESO.trim().toUpperCase() === selectedMesoNome.trim().toUpperCase()
+          (f) =>
+            f.properties.NM_MESO.trim().toUpperCase() ===
+            selectedMesoNome.trim().toUpperCase()
         );
         setGeo((prev) => ({
           para: null,
           meso: { type: "FeatureCollection", features },
         }));
-        setRenderKey((prev) => prev + 1);
       })
       .catch((err) => console.error("Erro ao carregar mesorregião:", err));
   }, [selectedMesoNome]);
 
-  if (zoomLevel === null) return null;
-
   return (
     <MapContainer
-      key={renderKey}
       center={[-3.4168, -52.1472]}
       zoom={zoomLevel}
       className="h-full w-full z-0"
@@ -61,17 +98,32 @@ const Mapa = () => {
       />
 
       {geo.para && (
-        <GeoJSON
-          data={geo.para}
-          style={{ color: "green", weight: 3, fillOpacity: 0.2 }}
-        />
+        <>
+          <GeoJSON
+            data={geo.para}
+            style={{ color: "green", weight: 3, fillOpacity: 0.2 }}
+          />
+          <FitBoundsPara geojson={geo.para} />
+        </>
       )}
-      
+
       {geo.meso && (
-        <GeoJSON
-          data={geo.meso}
-          style={{ color: "blue", weight: 2, fillOpacity: 0.2 }}
-        />
+        <>
+          <GeoJSON
+            key={JSON.stringify(geo.meso)}
+            data={geo.meso}
+            style={() => ({
+              color: "blue",
+              weight: 2,
+              fillOpacity: 0.2,
+            })}
+            onEachFeature={(_, layer) => {
+              layer.setStyle({ color: "blue", weight: 2, fillOpacity: 0.2 });
+              layer.bringToFront();
+            }}
+          />
+          <FitBounds geojson={geo.meso} />
+        </>
       )}
     </MapContainer>
   );
