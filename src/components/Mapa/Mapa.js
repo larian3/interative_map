@@ -24,14 +24,18 @@ const FitBounds = ({ geojson }) => {
 const Mapa = () => {
   const { selectedMesoNome, setSelectedMesoNome } = useMeso();
   const [originalMeso, setOriginalMeso] = useState(null);
-  const [zoomLevel, setZoomLevel] = useState(6);
+  const [zoomLevel, setZoomLevel] = useState(
+    window.innerWidth < 768 ? 5 : 6 
+  );
 
   useEffect(() => {
     const handleResize = () => {
       setZoomLevel(window.innerWidth < 768 ? 5 : 6);
     };
-    handleResize();
+
+    handleResize(); 
     window.addEventListener("resize", handleResize);
+
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
@@ -82,7 +86,7 @@ const Mapa = () => {
       center={[-3.4168, -52.1472]}
       zoom={zoomLevel}
       className="h-full w-full z-0"
-      
+      scrollWheelZoom={true} 
     >
       <TileLayer
         attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>'
