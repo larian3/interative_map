@@ -9,12 +9,12 @@ const FitBounds = ({ geojson }) => {
   const map = useMap();
 
   useEffect(() => {
-    if (!geojson) return;
+    if (!geojson || geojson.features.length === 0) return;
 
     const layer = L.geoJSON(geojson);
     const bounds = layer.getBounds();
     if (bounds.isValid()) {
-      map.fitBounds(bounds, { padding: [0, 0] });
+      map.fitBounds(bounds, { padding: [20, 20] });
     }
   }, [geojson, map]);
 
@@ -22,22 +22,10 @@ const FitBounds = ({ geojson }) => {
 };
 
 const Mapa = () => {
-  const { selectedMesoNome, setSelectedMesoNome } = useMeso();
+  const { selectedMesoNome, setSelectedMesoNome } = useMeso(); 
   const [originalMeso, setOriginalMeso] = useState(null);
-  const [zoomLevel, setZoomLevel] = useState(
-    window.innerWidth < 768 ? 5 : 6 
-  );
-
-  useEffect(() => {
-    const handleResize = () => {
-      setZoomLevel(window.innerWidth < 768 ? 5 : 6);
-    };
-
-    handleResize(); 
-    window.addEventListener("resize", handleResize);
-
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const [microrregioes, setMicrorregioes] = useState(null);
+  const [filteredMicros, setFilteredMicros] = useState(null);
 
   useEffect(() => {
     fetch("/mesorregioes_para.geojson")
@@ -46,10 +34,35 @@ const Mapa = () => {
       .catch((err) => console.error("Erro ao carregar mesorregiões:", err));
   }, []);
 
+  useEffect(() => {
+    fetch("/microrregioes_para_cleaned.geojson")
+      .then((res) => res.json())
+      .then((data) => setMicrorregioes(data))
+      .catch((err) => console.error("Erro ao carregar microrregiões:", err));
+  }, []);
+
+  useEffect(() => {
+    if (microrregioes && selectedMesoNome) {
+      const microsFiltradas = {
+        type: "FeatureCollection",
+        features: microrregioes.features.filter((f) => {
+          const microrregiaoMeso = f.properties.NM_MESO?.trim().toUpperCase();
+          const mesoSelecionada = selectedMesoNome.trim().toUpperCase();
+          return microrregiaoMeso === mesoSelecionada;
+        }),
+      };
+      console.log("Microrregiões filtradas:", microsFiltradas); 
+      setFilteredMicros(microsFiltradas);
+    } else {
+      setFilteredMicros({ type: "FeatureCollection", features: [] });
+    }
+  }, [microrregioes, selectedMesoNome]);
+
   const onEachFeature = (feature, layer) => {
     const mesoName = feature.properties.NM_MESO;
     layer.on({
       click: () => {
+        console.log("Mesorregião clicada:", mesoName);
         setSelectedMesoNome(mesoName);
       },
     });
@@ -69,24 +82,18 @@ const Mapa = () => {
     };
   };
 
-  const selectedFeatureGeoJSON =
-    originalMeso && selectedMesoNome
-      ? {
-          type: "FeatureCollection",
-          features: originalMeso.features.filter(
-            (f) =>
-              f.properties.NM_MESO.trim().toUpperCase() ===
-              selectedMesoNome.trim().toUpperCase()
-          ),
-        }
-      : null;
+  const getMicroStyle = () => ({
+    color: "purple",
+    weight: 2,
+    fillOpacity: 0.4,
+  });
 
   return (
     <MapContainer
       center={[-3.4168, -52.1472]}
-      zoom={zoomLevel}
+      zoom={6}
       className="h-full w-full z-0"
-      scrollWheelZoom={true} 
+      scrollWheelZoom={true}
     >
       <TileLayer
         attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>'
@@ -94,13 +101,22 @@ const Mapa = () => {
       />
 
       {originalMeso && (
+        <GeoJSON
+          key={`meso-layer-${selectedMesoNome}`}
+          data={originalMeso}
+          style={getFeatureStyle}
+          onEachFeature={onEachFeature}
+        />
+      )}
+
+      {filteredMicros && filteredMicros.features.length > 0 && (
         <>
           <GeoJSON
-            data={originalMeso}
-            style={getFeatureStyle}
-            onEachFeature={onEachFeature}
+            key={`micro-layer-${selectedMesoNome}-${Date.now()}`}
+            data={filteredMicros}
+            style={getMicroStyle}
           />
-          {selectedFeatureGeoJSON && <FitBounds geojson={selectedFeatureGeoJSON} />}
+          <FitBounds geojson={filteredMicros} />
         </>
       )}
     </MapContainer>
