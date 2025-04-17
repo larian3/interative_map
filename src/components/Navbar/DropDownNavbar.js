@@ -6,16 +6,20 @@ import { useMeso } from "@/context/MesoContext";
 export default function DropdownNavbar({ onSelect }) {
   const [mesoRegioes, setMesoRegioes] = useState([]);
   const [microRegioes, setMicroRegioes] = useState([]);
-  const [selectedMesoId, setSelectedMesoId] = useState("");
-  const [selectedMicro, setSelectedMicro] = useState("");
 
-  const { setSelectedMesoNome } = useMeso();
+  const {
+    selectedMesoId,
+    setSelectedMesoId,
+    selectedMesoNome,
+    setSelectedMesoNome,
+    selectedMicroNome,
+    setSelectedMicroNome,
+  } = useMeso();
 
   useEffect(() => {
     async function fetchMesoRegioes() {
       try {
         const response = await fetch("/api/regioes");
-        if (!response.ok) throw new Error("Erro ao carregar mesorregiões");
         const data = await response.json();
         setMesoRegioes(data.meso || []);
       } catch (error) {
@@ -30,7 +34,6 @@ export default function DropdownNavbar({ onSelect }) {
       if (!selectedMesoId) return;
       try {
         const response = await fetch(`/api/regioes?mesoId=${selectedMesoId}`);
-        if (!response.ok) throw new Error("Erro ao carregar microrregiões");
         const data = await response.json();
         setMicroRegioes(data.micro || []);
       } catch (error) {
@@ -45,14 +48,13 @@ export default function DropdownNavbar({ onSelect }) {
     const selected = mesoRegioes.find((meso) => meso.id.toString() === id);
     setSelectedMesoId(id);
     setSelectedMesoNome(selected?.nome || "");
-    setSelectedMicro("");
+    setSelectedMicroNome("");
 
     if (onSelect) onSelect();
   };
 
   const handleMicroChange = (e) => {
-    const selected = e.target.value;
-    setSelectedMicro(selected);
+    setSelectedMicroNome(e.target.value);
   };
 
   return (
@@ -61,44 +63,38 @@ export default function DropdownNavbar({ onSelect }) {
         <label className="block text-sm font-medium text-gray-700">Mesorregião:</label>
         <div className="relative">
           <select
-            className="w-full h-[44px] text-[16px] text-gray-900 bg-white border border-gray-300 rounded-md shadow-sm 
-              px-3 pr-10 text-left transition-all duration-200 ease-in-out 
-              focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 
-              hover:border-gray-400 appearance-none"
+            className="block appearance-none w-full bg-white border border-gray-300 text-gray-700 py-2 px-3 pr-8 rounded leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             onChange={handleMesoChange}
             value={selectedMesoId}
           >
             <option value="">Selecione</option>
             {mesoRegioes.map((meso) => (
-              <option key={meso.id} value={meso.id}>
-                {meso.nome}
-              </option>
+              <option key={meso.id} value={meso.id}>{meso.nome}</option>
             ))}
           </select>
-          <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-black text-2xl pointer-events-none" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+            <FiChevronDown />
+          </div>
         </div>
       </div>
-      
+
       <div className="w-full sm:w-[200px] max-w-full">
         <label className="block text-sm font-medium text-gray-700">Microrregião:</label>
         <div className="relative">
           <select
-            className="w-full h-[44px] text-[16px] text-gray-900 bg-white border border-gray-300 rounded-md shadow-sm 
-              px-3 pr-10 text-left transition-all duration-200 ease-in-out 
-              focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 
-              hover:border-gray-400 appearance-none"
+            className="block appearance-none w-full bg-white border border-gray-300 text-gray-700 py-2 px-3 pr-8 rounded leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             onChange={handleMicroChange}
-            value={selectedMicro}
+            value={selectedMicroNome}
             disabled={!selectedMesoId}
           >
             <option value="">Selecione</option>
             {microRegioes.map((micro) => (
-              <option key={micro.id} value={micro.nome}>
-                {micro.nome}
-              </option>
+              <option key={micro.id} value={micro.nome}>{micro.nome}</option>
             ))}
           </select>
-          <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-black text-2xl pointer-events-none" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+            <FiChevronDown />
+          </div>
         </div>
       </div>
     </div>
