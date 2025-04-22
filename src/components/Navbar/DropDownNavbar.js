@@ -88,9 +88,12 @@ export default function DropdownNavbar({ onSelect }) {
             disabled={!selectedMesoId}
           >
             <option value="">Selecione</option>
-            {microRegioes.map((micro) => (
-              <option key={micro.id} value={micro.nome}>{micro.nome}</option>
-            ))}
+            {microRegioes.map((micro) => {
+              const nomeLimpo = micro.nome.replace(/^microrregi[aã]o de\s*/i, "");
+              return (
+                <option key={micro.id} value={nomeLimpo}>{nomeLimpo}</option>
+              );
+            })}
           </select>
           <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
             <FiChevronDown />

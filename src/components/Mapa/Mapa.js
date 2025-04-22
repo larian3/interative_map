@@ -23,7 +23,10 @@ const Mapa = () => {
     selectedMesoNome,
     setSelectedMesoNome,
     setSelectedMesoId,
+    selectedMicroNome,
+    setSelectedMicroNome,
   } = useMeso();
+
   const [originalMeso, setOriginalMeso] = useState(null);
   const [microrregioes, setMicrorregioes] = useState(null);
   const [filteredMicros, setFilteredMicros] = useState(null);
@@ -56,12 +59,14 @@ const Mapa = () => {
     }
   }, [microrregioes, selectedMesoNome]);
 
-  const onEachFeature = (feature, layer) => {
-    const mesoName = feature.properties.NM_MESO;
+  const onEachMesoFeature = (feature, layer) => {
+    const mesoNameOriginal = feature.properties.NM_MESO;
+    const mesoName = mesoNameOriginal.toUpperCase();
+
     layer.on({
       click: () => {
-        console.log("Mesorregião clicada:", mesoName);
         setSelectedMesoNome(mesoName);
+        setSelectedMicroNome("");
 
         fetch("/api/regioes")
           .then(res => res.json())
@@ -71,10 +76,30 @@ const Mapa = () => {
           });
       },
     });
+
     layer.bindTooltip(mesoName, { sticky: true });
   };
 
-  const getFeatureStyle = (feature) => {
+  const onEachMicroFeature = (feature, layer) => {
+    const microNameOriginal = feature.properties.NM_MICRO;
+    const microNameLimpo = microNameOriginal.replace(/^microrregi[aã]o de\s*/i, "").toUpperCase();
+
+    layer.on({
+      click: () => {
+        setSelectedMicroNome(microNameLimpo);
+
+        const bounds = layer.getBounds();
+        const map = layer._map;
+        if (bounds.isValid()) {
+          map.fitBounds(bounds, { padding: [20, 20] });
+        }
+      },
+    });
+
+    layer.bindTooltip(microNameLimpo, { sticky: true });
+  };
+
+  const getMesoStyle = (feature) => {
     const mesoName = feature.properties.NM_MESO.trim().toUpperCase();
     const isSelected = selectedMesoNome?.trim().toUpperCase() === mesoName;
     return {
@@ -84,11 +109,15 @@ const Mapa = () => {
     };
   };
 
-  const getMicroStyle = () => ({
-    color: "purple",
-    weight: 2,
-    fillOpacity: 0.4,
-  });
+  const getMicroStyle = (feature) => {
+    const microName = feature.properties.NM_MICRO.trim().toUpperCase();
+    const isSelected = selectedMicroNome?.trim().toUpperCase() === microName;
+    return {
+      color: isSelected ? "red" : "purple",
+      weight: isSelected ? 3 : 2,
+      fillOpacity: 0.4,
+    };
+  };
 
   return (
     <MapContainer
@@ -106,8 +135,8 @@ const Mapa = () => {
         <GeoJSON
           key={`meso-${selectedMesoNome}`}
           data={originalMeso}
-          style={getFeatureStyle}
-          onEachFeature={onEachFeature}
+          style={getMesoStyle}
+          onEachFeature={onEachMesoFeature}
         />
       )}
 
@@ -117,6 +146,7 @@ const Mapa = () => {
             key={`micro-${Date.now()}`}
             data={filteredMicros}
             style={getMicroStyle}
+            onEachFeature={onEachMicroFeature}
           />
           <FitBounds geojson={filteredMicros} />
         </>
